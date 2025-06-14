@@ -31,23 +31,19 @@ def main():
     logging.basicConfig( level=logging.INFO)
     logger = logging.getLogger()
     
-
     url = "https://www.examtopics.com/discussions/microsoft/"
-    cert = "DP-700"
-    
-    
+    cert = "AZ-204"
     
     logger.info(f"Iniciando recuperacion de pregutnas de {cert} desde {url}")
     
     if True: ## asi desactivo leer las discusiones
         start_discussion_time = time.time()
-        discussion_list = get_discussions_parallel( url, cert, logger, max_pages=1000, workers=4)
+        discussion_list = get_discussions_parallel( url, cert, logger, max_pages=1200, workers=4)
         ##ordeno para recuperar por id, que entiendo será de mas reciente a mas antiguo
         print("\n".join(str(e) for e in discussion_list))
         discussion_list.sort(reverse=True)
         print("\n".join(str(e) for e in discussion_list))
 
-        
         logger.info(f"Recuperadas {len(discussion_list)} discusiones")
         
         #salvamos las preguntas a archivo
@@ -57,8 +53,6 @@ def main():
         
         end_discussion_time = time.time()
         logger.info(f"Tiempo del Paso 1: {end_discussion_time - start_discussion_time:.2f} segundos")
-    
-
     
     start_queston_time = time.time()
     
