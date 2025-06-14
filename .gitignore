@@ -1,1 +1,3 @@
 /snowcore cof02.pdf
+**/__pycache__/
+*.py[cod]
