@@ -1,55 +1,46 @@
 from playwright.sync_api import sync_playwright
-import re
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import logging
-
 import sys
-sys.path.append('./proxy')  # Donde 'subcarpeta' es la carpeta donde está tu proxy.py
 
-import proxy.ProxyRotator as proxyrot
+def scrape_page(url, cert, page_num, timeout_seconds=5):
+    results = []
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            
+            print (f"{url}{page_num}")
+            
+            response = page.goto(f"{url}{page_num}")
 
-def get_discussions(url, cert,logger):
-
-    questions = []
-    num_page = 1
-    with sync_playwright() as p:
-     
-        #proxy = proxyrot.get_good()
-        #browser = p.chromium.launch(proxy={"server": proxy},headless=True)
-        browser = p.chromium.launch(headless=True)
-        
-        page = browser.new_page()
-           
-        while True:
-            logger.debug(f"Procesando {url}{num_page}")
-            try:
-                response = page.goto(f"{url}{num_page}")
-            except Exception as e:
-                logger.error(f"Página {url}{num_page} no encontrada. Deteniendo...")
-                break       
-            logger.debug(f"Procesando {url}{num_page}. Response: {response.status}")
-                
-            # Verificar si la respuesta es 404 o no exitosa
             if response.status != 200:
-                logger.error(f"Página {url}{num_page} no encontrada (status: {response.status}). Deteniendo...")
-                break
-                    
-            page.wait_for_selector("a.discussion-link", timeout=5000)
+                return []
 
+            page.wait_for_selector("a.discussion-link", timeout=5000)
             links = page.locator("a.discussion-link")
             count = links.count()
             for i in range(count):
                 link_text = links.nth(i).text_content()
                 if cert in link_text:
                     href = links.nth(i).get_attribute("href")
-                    #print(f"the url is: {url}")
-                    #print(f"https://www.examtopics.com{href}")
-                  
-                    questions.append("https://www.examtopics.com"+href)
-                
-            num_page += 1
+                    results.append("https://www.examtopics.com" + href)
 
-        browser.close()        
-        return questions        
+            browser.close()
+    except Exception as e:
+        return []
+    return results
+
+def get_discussions_parallel(url, cert, logger, max_pages=500, workers=4):
+    all_questions = []
+
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        futures = [executor.submit(scrape_page, url, cert, i) for i in range(1, max_pages + 1)]
+        for future in as_completed(futures):
+            try:
+                result = future.result()
+                all_questions.extend(result)
+            except Exception as exc:
+                logger.error(f"Error durante la ejecución paralela: {exc}")
     
-    browser.close()        
-    return questions
+    return all_questions

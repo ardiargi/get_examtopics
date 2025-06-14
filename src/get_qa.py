@@ -7,8 +7,6 @@ sys.path.append('./proxy')  # Donde 'subcarpeta' es la carpeta donde está tu pr
 
 import proxy.ProxyRotator as proxyrot
 
-
-
 def replaces(text):
     # Función para limpiar el texto, eliminando saltos de línea y espacios duplicados
     if text:

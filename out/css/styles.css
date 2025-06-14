@@ -37,7 +37,13 @@ li {
     unicode-bidi: isolate;
 }
 
+li.multi-choice-item.correct-hidden.correct-choice{
+border: solid 1px lightgreen;
+    border-radius: 5px;
+    padding: 3px 0px 3px 0px;
+    font-weight: 800;
 
+}
 .multi-choice-item.correct-choice {
     border: solid 1px lightgreen;
     border-radius: 5px;
